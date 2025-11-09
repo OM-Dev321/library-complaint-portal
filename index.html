@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Learning Point Library — Complaint & Suggestion</title>
+
+<!-- Chart.js for admin charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+  --accent1: #00aaff;
+  --accent2: #8e44ad;
+  --glass: rgba(255,255,255,0.08);
+  --card: rgba(255,255,255,0.12);
+  --text-dark:#0b1220;
+  --muted: rgba(255,255,255,0.85);
+  --success:#16a34a;
+}
+*{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial;}
+html,body{height:100%;margin:0;}
+
+/* Soft gradient wave background */
+body{
+  background: linear-gradient(120deg,#0f172a 0%, #1f2a44 40%, #2b5876 100%);
+  color: white;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow-y:auto;
+}
+
+/* animated waves using pseudo elements */
+.bg-waves {
+  position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+}
+.wave {
+  position:absolute; left:-20%; width:140%; height:140%;
+  background: radial-gradient(circle at 10% 20%, rgba(124,58,237,0.12), transparent 15%),
+              radial-gradient(circle at 90% 80%, rgba(6,182,212,0.08), transparent 12%);
+  transform: translate3d(0,0,0);
+  animation: drift 12s linear infinite;
+  filter: blur(40px) saturate(140%);
+  opacity:0.95;
+}
+.wave.wave2 { top:10%; animation-duration:18s; transform: translateY(-10px) scale(1.05); }
+.wave.wave1 { top:40%; animation-duration:25s; transform: translateY(0) scale(1); }
+@keyframes drift {
+  0%{ transform: translateX(-5%) translateY(0) scale(1); }
+  50%{ transform: translateX(5%) translateY(-10px) scale(1.05); }
+  100%{ transform: translateX(-5%) translateY(0) scale(1); }
+}
+
+/* Container / card */
+.container {
+  position:relative;
+  z-index:2;
+  max-width:960px;
+  margin:24px auto;
+  padding:18px;
+}
+
+/* card look */
+.card {
+  display:flex;
+  gap:18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.04));
+  border-radius:16px;
+  padding:14px;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+  backdrop-filter: blur(8px) saturate(120%);
+  border:1px solid rgba(255,255,255,0.04);
+}
+
+/* column layout */
+.left, .right { padding:8px; }
+.left{ flex:1; }
+.right{ width:360px; border-radius:12px; background: linear-gradient(135deg, rgba(124,58,237,0.04), rgba(6,182,212,0.02)); display:flex; flex-direction:column; gap:12px; align-items:center; justify-content:flex-start; padding:16px; }
+
+.brand { display:flex; gap:12px; align-items:center; }
+.logoBox{ width:64px; height:64px; border-radius:12px; overflow:hidden; background:linear-gradient(135deg,var(--accent1),var(--accent2)); display:grid; place-items:center; box-shadow:0 8px 30px rgba(14,17,26,0.5); }
+.logoBox img{ width:58px; height:58px; object-fit:contain; display:block; }
+
+h1{ margin:0; font-size:18px; color:#fff; }
+.lead{ margin:6px 0 12px 0; color:rgba(255,255,255,0.9); font-size:13px; }
+
+/* form styles */
+form{ display:flex; flex-direction:column; gap:12px; }
+label{ font-size:13px; color:rgba(255,255,255,0.9); }
+input[type="text"], select, textarea, input[type="email"]{
+  width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.03); color: white; outline:none;
+}
+input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.6); }
+textarea{ min-height:120px; resize:vertical; }
+
+.fileBox{ display:flex; align-items:center; gap:8px; padding:10px; border-radius:10px; border:1px dashed rgba(255,255,255,0.06); cursor:pointer; }
+
+.footerSmall{ font-size:12px; color:rgba(255,255,255,0.7); margin-top:6px; }
+
+.btnRow{ display:flex; gap:10px; }
+.btnPrimary{ flex:1; padding:12px; border-radius:10px; border:none; background: linear-gradient(90deg,var(--accent2),var(--accent1)); color:white; font-weight:700; cursor:pointer; box-shadow:0 10px 30px rgba(7,10,29,0.6); }
+.btnGhost{ padding:10px 12px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.06); color:rgba(255,255,255,0.9); cursor:pointer; }
+
+.small{ font-size:12px; color:rgba(255,255,255,0.8); }
+
+/* toast */
+.toast { position:fixed; right:16px; bottom:20px; background:linear-gradient(90deg,#10b981,#06b6d4); color:white; padding:10px 14px; border-radius:10px; display:none; box-shadow:0 8px 30px rgba(2,6,23,0.4); z-index:9999; }
+
+/* success animation */
+.success { position:fixed; left:50%; top:45%; transform:translate(-50%,-50%) scale(0); width:120px; height:120px; border-radius:999px; display:grid; place-items:center; background:var(--success); color:white; font-size:46px; box-shadow:0 12px 30px rgba(0,0,0,0.35); z-index:9999; opacity:0; transition:all .35s ease; }
+.success.show { transform:translate(-50%,-50%) scale(1); opacity:1; animation:fadeAway 1.8s forwards 0.7s; }
+@keyframes fadeAway{ to{ transform:translate(-50%,-50%) scale(0); opacity:0; } }
+
+/* admin panel */
+.adminPanel{ margin-top:14px; display:none; padding:12px; border-radius:12px; background:rgba(0,0,0,0.5); color:white; }
+.analytics{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+.cardStat{ background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01)); padding:12px; border-radius:10px; min-width:140px; text-align:center; }
+.cardStat h3{ margin:6px 0 0 0; font-size:20px; }
+
+.tableRecent{ margin-top:12px; background:rgba(255,255,255,0.03); padding:8px; border-radius:10px; max-height:220px; overflow:auto; }
+.tableRecent table{ width:100%; border-collapse:collapse; color:white; font-size:13px; }
+.tableRecent th, .tableRecent td{ text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,0.03); }
+
+/* responsive mobile-first */
+@media (max-width:720px){
+  .card{ flex-direction:column; }
+  .right{ width:100%; order:-1; }
+  .logoBox{ width:56px; height:56px; }
+  header h1{ font-size:16px; }
+  .container{ padding:12px; }
+  .card{ padding:12px; border-radius:12px; }
+  .tableRecent{ max-height:160px; }
+  input[type="text"], select, textarea{ font-size:15px; }
+}
+</style>
+</head>
+<body>
+  <div class="bg-waves">
+    <div class="wave wave1"></div>
+    <div class="wave wave2"></div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="left">
+        <div class="brand">
+          <div class="logoBox"><img src="https://drive.google.com/uc?export=view&id=1OH8nyONDLQV856I9E_yomJNWkRGwj9hB" alt="logo"></div>
+          <div>
+            <h1>Learning Point Library</h1>
+            <div class="lead">Submit complaints & suggestions — anonymous to other students.</div>
+          </div>
+        </div>
+
+        <form id="complaintForm" novalidate>
+          <label for="name">Full Name <span class="small" style="color:#f87171">*</span></label>
+          <input id="name" name="name" type="text" placeholder="e.g. Asha Verma" required>
+
+          <label for="seat">Seat No <span class="small" style="color:#f87171">*</span></label>
+          <input id="seat" name="seat" type="text" placeholder="e.g. BT2023123" required>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px;margin-bottom:6px">
+            <span class="small">Complaint</span>
+            <label style="display:inline-block;position:relative">
+              <input id="typeToggle" type="checkbox" aria-label="Toggle complaint or suggestion">
+              <span style="position:absolute;left:0;top:0;right:0;bottom:0"></span>
+            </label>
+            <span class="small">Suggestion</span>
+          </div>
+
+          <div id="issueWrap">
+            <label for="issue">Issue</label>
+            <select id="issue" name="issue">
+              <option value="">Select issue</option>
+              <option>Book missing</option>
+              <option>Damaged furniture</option>
+              <option>Computer/Network</option>
+              <option>Cleanliness</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <label for="desc">Description <span class="small" style="color:#f87171">*</span></label>
+          <textarea id="desc" name="desc" placeholder="Describe the problem (rack no, computer no, etc.)" required></textarea>
+
+          <label class="small">Attach photo (optional)</label>
+          <label class="fileBox" for="fileInput">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v10" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 7l4-4 4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="small">Tap to choose image (jpg/png) — max 5MB</span>
+            <input id="fileInput" type="file" accept="image/*" style="display:none">
+          </label>
+
+          <div class="btnRow" style="margin-top:8px">
+            <button type="submit" class="btnPrimary">Submit</button>
+            <button type="reset" class="btnGhost">Reset</button>
+          </div>
+        </form>
+
+        <div class="footerSmall" style="margin-top:8px">© 2025 Learning Point Library | Designed by Hariom</div>
+      </div>
+
+      <div class="right">
+        <div style="text-align:center;width:100%">
+          <div style="font-weight:700;margin-bottom:8px">Quick tips</div>
+          <div class="small">1. Be specific — mention rack / floor / book code.</div>
+          <div class="small">2. Add a clear photo for faster resolution.</div>
+          <div class="small">3. If you give email (optional) you'll receive updates.</div>
+        </div>
+
+        <div style="width:100%;margin-top:12px">
+          <div style="font-weight:700;margin-bottom:6px">Student summary</div>
+          <div id="studentSummary" class="small">Loading…</div>
+        </div>
+
+        <div style="width:100%;margin-top:12px;text-align:center">
+          <button id="adminOpen" class="btnGhost" style="width:100%">Admin Login</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin area -->
+    <div id="adminArea" class="adminPanel" aria-hidden="true">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between">
+        <div id="adminWelcome" style="font-weight:700">Welcome, Admin 👋 Learning Point Library Dashboard</div>
+        <div>
+          <button id="refreshBtn" class="btnPrimary" style="background:linear-gradient(90deg,#06b6d4,#7c3aed)">Refresh</button>
+          <button id="logoutBtn" class="btnGhost">Logout</button>
+        </div>
+      </div>
+
+      <div class="analytics">
+        <div class="cardStat"><div class="small">Total Complaints</div><h3 id="totalComplaints">0</h3></div>
+        <div class="cardStat"><div class="small">Total Suggestions</div><h3 id="totalSuggestions">0</h3></div>
+        <div class="cardStat"><div class="small">Last updated</div><h3 id="lastUpdated">-</h3></div>
+      </div>
+
+      <div class="chartWrap" style="margin-top:10px;display:flex;gap:8px;flex-direction:column">
+        <div style="width:100%;background:transparent;padding:6px;border-radius:8px"><canvas id="pieChart"></canvas></div>
+        <div style="width:100%;background:transparent;padding:6px;border-radius:8px"><canvas id="barChart"></canvas></div>
+      </div>
+
+      <div class="tableRecent">
+        <table id="recentTable"><thead><tr><th>Name</th><th>Seat</th><th>Type</th><th>Description</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Submitted</div>
+  <div class="success" id="success">✔</div>
+
+<script>
+// Config: your Apps Script URL (POST + GET)
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSeNBUyjybML2AhAyNw_jPKrTh7OgmLnS6xbm7sBBWqSzK4WBNONCbA5FPGO8LYwE/exec";
+
+// Elements
+const typeToggle = document.getElementById('typeToggle');
+const issueWrap = document.getElementById('issueWrap');
+const complaintForm = document.getElementById('complaintForm');
+const toast = document.getElementById('toast');
+const success = document.getElementById('success');
+const studentSummary = document.getElementById('studentSummary');
+const adminOpen = document.getElementById('adminOpen');
+const adminArea = document.getElementById('adminArea');
+const refreshBtn = document.getElementById('refreshBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const recentTable = document.querySelector('#recentTable tbody');
+const totalComplaintsEl = document.getElementById('totalComplaints');
+const totalSuggestionsEl = document.getElementById('totalSuggestions');
+const lastUpdatedEl = document.getElementById('lastUpdated');
+const pieCtx = document.getElementById('pieChart').getContext('2d');
+const barCtx = document.getElementById('barChart').getContext('2d');
+let pieChart, barChart;
+
+// Toggle issue field when suggestion selected
+typeToggle.addEventListener('change', ()=>{
+  issueWrap.style.display = typeToggle.checked ? 'none' : 'block';
+});
+
+// Image input handling (show filename)
+document.getElementById('fileInput').addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  if(!f.type.startsWith('image/')){ alert('Select an image file'); e.target.value=''; return; }
+  if(f.size > 5*1024*1024){ alert('Image too large (max 5MB)'); e.target.value=''; return; }
+});
+
+// Show toast
+function showToast(msg){
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  setTimeout(()=> toast.style.display='none', 2800);
+}
+
+// Show success animation + ding
+function showSuccess(){
+  success.classList.add('show');
+  const s = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_7a6e3f6bd8.mp3');
+  s.play().catch(()=>{});
+  setTimeout(()=> success.classList.remove('show'), 2200);
+}
+
+// Submit form
+complaintForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  // validation
+  const name = document.getElementById('name').value.trim();
+  const seat = document.getElementById('seat').value.trim();
+  const desc = document.getElementById('desc').value.trim();
+  if(!name || !seat || !desc){ showToast('Please fill required fields'); return; }
+
+  const fd = new FormData(complaintForm);
+  // set issue blank for suggestion (server handles)
+  if(typeToggle.checked){
+    fd.set('issue', ''); // suggestion
+    fd.set('desc', desc);
+    fd.set('type','Suggestion');
+  } else {
+    // if complaint ensure issue selected
+    const issue = document.getElementById('issue').value;
+    if(!issue){ showToast('Please choose an issue type'); return; }
+    fd.set('issue', issue);
+    fd.set('type','Complaint');
+  }
+
+  try{
+    const res = await fetch(SCRIPT_URL, { method:'POST', body: fd });
+    const text = await res.text();
+    if(res.ok){
+      showToast('Submitted successfully');
+      showSuccess();
+      complaintForm.reset();
+      issueWrap.style.display = typeToggle.checked ? 'none' : 'block';
+      // refresh student summary quickly
+      setTimeout(()=> loadStudentSummary(), 900);
+    } else {
+      showToast('Submission failed');
+      console.error('Server returned:', text);
+    }
+  }catch(err){
+    showToast('Network error — try again');
+    console.error(err);
+  }
+});
+
+// Student summary (non-sensitive): fetch aggregated counts via GET if doGet present
+async function loadStudentSummary(){
+  try{
+    const resp = await fetch(SCRIPT_URL);
+    if(!resp.ok) throw new Error('No GET');
+    const data = await resp.json();
+    // normalize keys to lower-case
+    const rows = data.map(r=>{ const o={}; for(const k in r) o[k.toLowerCase().trim()]=r[k]; return o; });
+    const complaints = rows.filter(r=> (r.type||r.issue||'').toString().toLowerCase().includes('complaint') || (r.issue||'').toString().trim()!=='').length;
+    const suggestions = rows.filter(r=> (r.type||'').toString().toLowerCase().includes('suggestion')).length;
+    studentSummary.innerHTML = `Total complaints: <strong>${complaints}</strong><br>Total suggestions: <strong>${suggestions}</strong>`;
+    return {rows, complaints, suggestions};
+  }catch(err){
+    studentSummary.innerHTML = 'Summary unavailable';
+    return null;
+  }
+}
+
+// Admin functions
+adminOpen.addEventListener('click', ()=>{
+  // simple auth prompt
+  const email = prompt('Admin email (read-only):');
+  if(!email) return;
+  if(email.trim().toLowerCase() !== 'learningp395@gmail.com'){ alert('Not authorized'); return; }
+  const pin = prompt('Enter PIN:');
+  if(pin !== 'OM2025'){ alert('Wrong PIN'); return; }
+  // show admin area
+  document.getElementById('adminArea').style.display = 'block';
+  window.scrollTo({top: document.getElementById('adminArea').offsetTop, behavior:'smooth'});
+  loadAdminData();
+});
+
+logoutBtn.addEventListener('click', ()=>{
+  document.getElementById('adminArea').style.display = 'none';
+});
+
+refreshBtn.addEventListener('click', loadAdminData);
+
+// load admin analytics
+async function loadAdminData(){
+  try{
+    const resp = await fetch(SCRIPT_URL);
+    if(!resp.ok) throw new Error('no GET');
+    const data = await resp.json();
+    // normalize rows
+    const rows = data.map(r=>{ const o={}; for(const k in r) o[k.toLowerCase().trim()]=r[k]; return o; });
+    const totalComplaints = rows.filter(r=> (r.type||r['type']||'').toString().toLowerCase().includes('complaint') || (r.issue||'').toString().trim()!=='').length;
+    const totalSuggestions = rows.filter(r=> (r.type||'').toString().toLowerCase().includes('suggestion')).length;
+    totalComplaintsEl.textContent = totalComplaints;
+    totalSuggestionsEl.textContent = totalSuggestions;
+    lastUpdatedEl.textContent = new Date().toLocaleString();
+
+    // prepare pie
+    const pieData = [totalComplaints, totalSuggestions];
+    if(pieChart) pieChart.destroy();
+    pieChart = new Chart(pieCtx, { type:'pie', data:{ labels:['Complaints','Suggestions'], datasets:[{ data:pieData, backgroundColor:['#ef4444','#10b981'] }] }, options:{responsive:true} });
+
+    // bar chart by issue
+    const issueCounts = {};
+    rows.forEach(r=>{
+      const key = (r.issue || 'Other').toString();
+      issueCounts[key] = (issueCounts[key]||0)+1;
+    });
+    const labels = Object.keys(issueCounts);
+    const vals = Object.values(issueCounts);
+    if(barChart) barChart.destroy();
+    barChart = new Chart(barCtx, { type:'bar', data:{ labels:labels, datasets:[{ label:'Count', data:vals, backgroundColor:'#7c3aed' }] }, options:{responsive:true} });
+
+    // recent 5 entries
+    recentTable.innerHTML = '';
+    const recent = rows.slice(-5).reverse();
+    recent.forEach(r=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${escapeHtml(r.name||'')}</td><td>${escapeHtml(r.seat||'')}</td><td>${escapeHtml(r.type||r.issue||'')}</td><td>${escapeHtml(r.desc||r.description||'')}</td>`;
+      recentTable.appendChild(tr);
+    });
+  }catch(err){
+    alert('Unable to load admin data. Make sure Apps Script doGet() is deployed and web app URL is accessible.');
+    console.error(err);
+  }
+}
+
+function escapeHtml(s){ if(!s) return ''; return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+
+// Initial load
+loadStudentSummary();
+</script>
+</body>
+</html>
